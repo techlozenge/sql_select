@@ -1,5 +1,8 @@
 # sql_select
 
+________________________________________________________________________________
+Easy Challenge
+
 mysql> select * from student;
 +------------+------------+-----------+---------------------+------------+
 | student_id | first_name | last_name | years_of_experience | start_date |
@@ -103,8 +106,10 @@ mysql> select first_name, last_name, start_date from student
 +------------+-----------+------------+
 6 rows in set (0.00 sec)
 
+
 ________________________________________________________________________________
 Medium Challenge: Changing the GRADE field in Assignment
+
 
 
         CREATE TABLE `assignment` (
@@ -139,8 +144,7 @@ Medium Challenge: Changing the GRADE field in Assignment
             5     Not graded
 
 
-_______________________________________________________
-Index & Create the Foreign Key In assignment
+===> Index & Create the Foreign Key In assignment
 
         NOTE: BOTH assignment AND grade CONTAINED NO DATA PRIOR TO THESE OPERATIONS
 
@@ -152,10 +156,9 @@ Index & Create the Foreign Key In assignment
         Query OK, 0 rows affected (0.02 sec)
         Records: 0  Duplicates: 0  Warnings: 0
 
-_______________________________________________________
-Build assignment Values:
+===> Build assignment Values:
 
-mysql> describe assignment;
+        mysql> describe assignment;
         +----------------+------------------+------+-----+---------+----------------+
         | Field          | Type             | Null | Key | Default | Extra          |
         +----------------+------------------+------+-----+---------+----------------+
@@ -185,8 +188,7 @@ mysql> describe assignment;
         Query OK, 5 rows affected (0.00 sec)
         Records: 5  Duplicates: 0  Warnings: 0
 
-_______________________________________________________
-Built corresponding Grade Values:
+===> Built corresponding Grade Values:
 
         mysql> describe grade;
         +----------+------------------+------+-----+---------+----------------+
@@ -260,7 +262,61 @@ Built corresponding Grade Values:
         5 rows in set (0.00 sec)
 
 
+________________________________________________________________________________
+Hard Challenge:
 
+Add the constraint to the assignment table that prohibits creating an assignment without an associated student row;
+
+    Since the data between these fields is consistent but the definition is NOT the same, ensuring student_id in both assignment and student have the same field definition(s) - in this case "unsigned" and "int" - allows us to index the student_id in assignment followed by adding a foreign key to assignment referencing the student student_id.
+
+Commands:
+
+    CREATE INDEX idx_student_id ON assignment (student_id);
+    ALTER TABLE assignment ADD CONSTRAINT idx_student_id FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+        mysql> CREATE INDEX idx_student_id ON assignment (student_id);
+        Query OK, 0 rows affected (0.03 sec)
+        Records: 0  Duplicates: 0  Warnings: 0
+
+        mysql> ALTER TABLE assignment ADD CONSTRAINT idx_student_id FOREIGN KEY (student_id) REFERENCES student(student_id);
+        Query OK, 5 rows affected (0.02 sec)
+        Records: 5  Duplicates: 0  Warnings: 0
+
+        ===> These are the final table info states at the end of this assignment
+
+        assignment:
+
+            CREATE TABLE `assignment` (
+              `assignment_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `student_id` int(11) unsigned NOT NULL,
+              `assignment_nbr` int(11) NOT NULL,
+              `class_id` int(11) DEFAULT NULL,
+              `grade_id` int(11) unsigned NOT NULL,
+              PRIMARY KEY (`assignment_id`),
+              KEY `idx_grade_id` (`grade_id`),
+              KEY `idx_student_id` (`student_id`),
+              CONSTRAINT `idx_grade_id` FOREIGN KEY (`grade_id`) REFERENCES `grade` (`grade_id`),
+              CONSTRAINT `idx_student_id` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+
+        grade:
+
+            CREATE TABLE `grade` (
+              `grade_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `grade` varchar(30) DEFAULT NULL,
+              PRIMARY KEY (`grade_id`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+
+        student:
+
+            CREATE TABLE `student` (
+              `student_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `first_name` varchar(30) DEFAULT NULL,
+              `last_name` varchar(30) DEFAULT NULL,
+              `years_of_experience` tinyint(3) DEFAULT NULL,
+              `start_date` date DEFAULT NULL,
+              PRIMARY KEY (`student_id`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
 
 HERE ENDTH THE LESSON
