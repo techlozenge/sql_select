@@ -104,16 +104,160 @@ mysql> select first_name, last_name, start_date from student
 6 rows in set (0.00 sec)
 
 ________________________________________________________________________________
-Changing the GRADE field in Assignment
+Medium Challenge: Changing the GRADE field in Assignment
 
-CREATE TABLE `assignment` (
-  `assignment_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `student_id` int(11) NOT NULL,
-  `assignment_nbr` int(11) NOT NULL,
-  `grade` varchar(30) DEFAULT NULL,
-  `class_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`assignment_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+        CREATE TABLE `assignment` (
+          `assignment_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+          `student_id` int(11) NOT NULL,
+          `assignment_nbr` int(11) NOT NULL,
+          `class_id` int(11) DEFAULT NULL,
+          `grade_id` int(11), DEFAULT NULL,             <== changed this with ALTER below
+          PRIMARY KEY (`assignment_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+        CREATE TABLE `grade` (
+          `grade_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+          `grade` varchar(30) DEFAULT NULL,
+          PRIMARY KEY (`grade_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+        mysql> alter table assignment drop column grade;
+        Query OK, 0 rows affected (0.02 sec)
+        Records: 0  Duplicates: 0  Warnings: 0
+
+        mysql> alter table assignment add column grade_id int unsigned not null
+        Query OK, 0 rows affected (0.02 sec)
+        Records: 0  Duplicates: 0  Warnings: 0
+
+        grade_id  grade
+            1     Incomplete
+            2     Complete and unsatisfactory
+            3     Complete and satisfactory
+            4     Exceeds expectations
+            5     Not graded
+
+
+_______________________________________________________
+Index & Create the Foreign Key In assignment
+
+        NOTE: BOTH assignment AND grade CONTAINED NO DATA PRIOR TO THESE OPERATIONS
+
+        mysql> CREATE INDEX idx_grade_id ON assignment (grade_id);
+        Query OK, 0 rows affected (0.02 sec)
+        Records: 0  Duplicates: 0  Warnings: 0
+
+        mysql> ALTER TABLE assignment ADD CONSTRAINT idx_grade_id FOREIGN KEY (grade_id) REFERENCES grade(grade_id);
+        Query OK, 0 rows affected (0.02 sec)
+        Records: 0  Duplicates: 0  Warnings: 0
+
+_______________________________________________________
+Build assignment Values:
+
+mysql> describe assignment;
+        +----------------+------------------+------+-----+---------+----------------+
+        | Field          | Type             | Null | Key | Default | Extra          |
+        +----------------+------------------+------+-----+---------+----------------+
+        | assignment_id  | int(11) unsigned | NO   | PRI | NULL    | auto_increment |
+        | student_id     | int(11)          | NO   |     | NULL    |                |
+        | assignment_nbr | int(11)          | NO   |     | NULL    |                |
+        | class_id       | int(11)          | YES  |     | NULL    |                |
+        | grade_id       | int(11) unsigned | NO   | MUL | NULL    |                |
+        +----------------+------------------+------+-----+---------+----------------+
+        5 rows in set (0.00 sec)
+
+        NOTE: AUTO-INCREMENT CREATED VALUES 1-5 IN THE grades table
+
+        insert into assignment (student_id, assignment_nbr, class_id, grade_id) values
+        (1, 1, 1, 1),
+        (2, 2, 2, 2),
+        (3, 3, 3, 3),
+        (4, 4, 4, 4),
+        (5, 5, 5, 5);
+
+        mysql>         insert into assignment (student_id, assignment_nbr, class_id, grade_id) values
+            ->         (1, 1, 1, 1),
+            ->         (2, 2, 2, 2),
+            ->         (3, 3, 3, 3),
+            ->         (4, 4, 4, 4),
+            ->         (5, 5, 5, 5);
+        Query OK, 5 rows affected (0.00 sec)
+        Records: 5  Duplicates: 0  Warnings: 0
+
+_______________________________________________________
+Built corresponding Grade Values:
+
+        mysql> describe grade;
+        +----------+------------------+------+-----+---------+----------------+
+        | Field    | Type             | Null | Key | Default | Extra          |
+        +----------+------------------+------+-----+---------+----------------+
+        | grade_id | int(11) unsigned | NO   | PRI | NULL    | auto_increment |
+        | grade    | varchar(30)      | YES  |     | NULL    |                |
+        +----------+------------------+------+-----+---------+----------------+
+        2 rows in set (0.00 sec)
+
+        insert into grade (grade) values
+         ('Incomplete'),
+         ('Complete and unsatisfactory'),
+         ('Complete and satisfactory'),
+         ('Exceeds expectations'),
+         ('Not graded');
+
+        mysql>         insert into grade (grade) values
+            ->          ('Incomplete'),
+            ->          ('Complete and unsatisfactory'),
+            ->          ('Complete and satisfactory'),
+            ->          ('Exceeds expectations'),
+            ->          ('Not graded');
+        Query OK, 5 rows affected (0.00 sec)
+        Records: 5  Duplicates: 0  Warnings: 0
+
+
+        mysql> Explain assignment;
+        +----------------+------------------+------+-----+---------+----------------+
+        | Field          | Type             | Null | Key | Default | Extra          |
+        +----------------+------------------+------+-----+---------+----------------+
+        | assignment_id  | int(11) unsigned | NO   | PRI | NULL    | auto_increment |
+        | student_id     | int(11)          | NO   |     | NULL    |                |
+        | assignment_nbr | int(11)          | NO   |     | NULL    |                |
+        | class_id       | int(11)          | YES  |     | NULL    |                |
+        | grade_id       | int(11) unsigned | NO   | MUL | NULL    |                |
+        +----------------+------------------+------+-----+---------+----------------+
+        5 rows in set (0.00 sec)
+
+        mysql> select * from assignment;
+        +---------------+------------+----------------+----------+----------+
+        | assignment_id | student_id | assignment_nbr | class_id | grade_id |
+        +---------------+------------+----------------+----------+----------+
+        |             6 |          1 |              1 |        1 |        1 |
+        |             7 |          2 |              2 |        2 |        2 |
+        |             8 |          3 |              3 |        3 |        3 |
+        |             9 |          4 |              4 |        4 |        4 |
+        |            10 |          5 |              5 |        5 |        5 |
+        +---------------+------------+----------------+----------+----------+
+        5 rows in set (0.00 sec)
+
+        mysql> explain grade;
+        +----------+------------------+------+-----+---------+----------------+
+        | Field    | Type             | Null | Key | Default | Extra          |
+        +----------+------------------+------+-----+---------+----------------+
+        | grade_id | int(11) unsigned | NO   | PRI | NULL    | auto_increment |
+        | grade    | varchar(30)      | YES  |     | NULL    |                |
+        +----------+------------------+------+-----+---------+----------------+
+        2 rows in set (0.00 sec)
+
+        mysql> select * from grade;
+        +----------+-----------------------------+
+        | grade_id | grade                       |
+        +----------+-----------------------------+
+        |        1 | Incomplete                  |
+        |        2 | Complete and unsatisfactory |
+        |        3 | Complete and satisfactory   |
+        |        4 | Exceeds expectations        |
+        |        5 | Not graded                  |
+        +----------+-----------------------------+
+        5 rows in set (0.00 sec)
 
 
 
